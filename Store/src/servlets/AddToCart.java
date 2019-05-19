@@ -1,8 +1,6 @@
 package servlets;
 
-
 import java.io.IOException;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,19 +8,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import manager.Manager;
+import database.Cart;
 
 /**
- * Servlet implementation class Creation
+ * Servlet implementation class AddToCart
  */
-@WebServlet("/Creation")
-public class Creation extends HttpServlet {
+@WebServlet("/AddToCart")
+public class AddToCart extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public Creation() {
+    public AddToCart() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -39,19 +37,26 @@ public class Creation extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Manager accounts = (Manager) getServletContext().getAttribute("Manager");
-		String name = request.getParameter("name");
-		String password = request.getParameter("password");
+		String[] counts = request.getParameterValues("count");
+		String[] ids = request.getParameterValues("id");
 		RequestDispatcher rd;
-		if(accounts.containsName(name)) {
-			rd = request.getRequestDispatcher("busyName.jsp");
-			rd.forward(request, response);
-		} else {
-			accounts.add(name, password);
-			rd = request.getRequestDispatcher("welcome.jsp");
-			rd.forward(request, response);
+		Cart cart = (Cart) request.getSession().getAttribute("cart");
+		for (int i = 0; i < ids.length; i++) {
+			int count;
+			try {
+				count = Integer.parseInt(counts[i]);
+			} catch (NumberFormatException e) {
+				count = 0;
+			}
+			String id = ids[i];
+			if(count != 0) {
+				cart.addItem(id, count);
+			} else {
+				cart.remove(id);
+			}
 		}
-		
+		rd = request.getRequestDispatcher("cart.jsp");
+		rd.forward(request, response);
 	}
 
 }
